@@ -36,11 +36,20 @@ def get_hunks_from(input):
 
     
     return ret_list
+
+def get_relevant_commits_from_diff(hunk):
+    # - extract context file and context from hunk
+    # - let git list history for a file extracted from context
+    # - in list, search for commits with the same context
+    # - to obtain those contexts, run each commit's diff through get_hunks_from
+    # - then compare hunk.context with commit.context
     
+    pass
 
 
 def main():
     patch_file = None
+    relevant_commits = None
 
     if len(sys.argv) > 1:
         patch_file = sys.argv[1]
@@ -58,6 +67,7 @@ def main():
     
     for hunk in patch_obj:
         # magic sh*t to lookup all relevant commits
+        relevant_commits.append(get_relevant_commits_from_diff(hunk))
         pass
 
 
