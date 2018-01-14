@@ -3,39 +3,57 @@ import re
 import logging
 from whatthepatch import parse_patch
 
-def get_hunks_from(input):
+class myGitPatch:
+    def __init__(self, text):
 
-    # list of dictionaries containing the following keys:
-    # {old={file, date, time}, new={file, date, time}, diff={old_chunk, new_chunk, context}}
-    ret_list = []
+        # list of dictionaries containing the following keys:
+        # {old={file, date, time}, new={file, date, time}, diff={old_chunk, new_chunk, context}}
+        self.hunks = get_hunks_from(text)
 
-    old = None
-    new = None
-    diff = None
 
-    for line in input:
+    def get_old_files(self):
+        files = set()
+
+        for hunk in hunks::
+            files.add(hunk.old.file)
         
+        return files
 
-        line.strip()
-        
-        if line.startwith("+++"):
-            #new = line.split()[1]
-            match = re.match(r"\+\+\+\s+(?P<file>[^\s]+)\s+(?P<date>[^\s]+)\s(?P<time>[^\s]+)", line)
-            new = match.groupdict()
-        
-        if line.startswith("---"):
-            #old = line.split()[1]
-            match = re.match(r"\-\-\-\s+(?P<file>[^\s]+)\s+(?P<date>[^\s]+)\s(?P<time>[^\s]+)", line)
-            old = match.groupdict()
 
-        if line.startswith("@@") and new and old:
-            match = re.match(r"@@\s+\-(?P<old_chunk>[^\s]+)\s+\+(?P<new_chunk>[^\s]+)[@\s]+(?P<context>.*$)", line)
-            diff = match.groupdict()
-        
-        ret_list.append({'old':old,'new':new,'diff':diff})
+    def get_hunks_from(self, input):
 
-    
-    return ret_list
+        
+        ret_list = []
+
+        old = None
+        new = None
+        diff = None
+
+        for line in input:
+            
+
+            line.strip()
+            
+            if line.startwith("+++"):
+                #new = line.split()[1]
+                match = re.match(r"\+\+\+\s+(?P<file>[^\s]+)\s+(?P<date>[^\s]+)\s(?P<time>[^\s]+)", line)
+                new = match.groupdict()
+            
+            if line.startswith("---"):
+                #old = line.split()[1]
+                match = re.match(r"\-\-\-\s+(?P<file>[^\s]+)\s+(?P<date>[^\s]+)\s(?P<time>[^\s]+)", line)
+                old = match.groupdict()
+
+            if line.startswith("@@") and new and old:
+                match = re.match(r"@@\s+\-(?P<old_chunk>[^\s]+)\s+\+(?P<new_chunk>[^\s]+)[@\s]+(?P<context>.*$)", line)
+                diff = match.groupdict()
+            
+            ret_list.append({'old':old,'new':new,'diff':diff})
+
+        
+        return ret_list
+
+
 
 def get_relevant_commits_from_diff(hunk):
     # - extract context file and context from hunk
