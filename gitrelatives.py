@@ -8,9 +8,9 @@ class MyGitPatch:
 
         # list of dictionaries containing the following keys:
         # {old={file, date, time}, new={file, date, time}, diff={old_chunk, new_chunk, context}}
-        self.hunks = self.get_hunks_from(text)
+        self.hunks = self.load_hunks_from_text(text)
 
-
+    # obsoleted?
     def get_old_files(self):
         files = set()
 
@@ -20,9 +20,33 @@ class MyGitPatch:
         return files
 
 
-    def get_hunks_from(self, input):
+    def get_files_with_chunks(self):
+        ret_list = []
+        current_file = self.hunks[0].old
+        hunks_for_file = []
+
+        for hunk in self.hunks:
+            if hunk.old == current_file:
+                hunks_for_file.append(hunk.diff)
+            else:
+                if hunks_for_file:
+                    ret_list.append((current_file, hunks_for_file))
+                current_file = hunk.old
+                hunks_for_file = None
+                hunks_for_file.append(hunk.diff)
+
+        if hunks_for_file:
+            ret_list.append((current_file, hunks_for_file))
+
+        return ret_list
 
 
+    # obsoleted?
+    def get_chunks_for_old_file(self, old_file):
+        return [item.diff for item in self.hunks if item.old.file == old_file]
+
+
+    def load_hunks_from_text(self, input):
         ret_list = []
 
         old = None
@@ -50,17 +74,18 @@ class MyGitPatch:
 
             ret_list.append({'old':old,'new':new,'diff':diff})
 
-
         return ret_list
 
 
 
-def get_relevant_commits_from_diff(hunk):
+def get_relevant_commits_from_diffs(file_chunks_pair):
     # - extract context file and context from hunk
     # - let git list history for a file extracted from context
     # - in list, search for commits with the same context
     # - to obtain those contexts, run each commit's diff through get_hunks_from
     # - then compare hunk.context with commit.context
+
+
 
     pass
 
@@ -83,11 +108,11 @@ def main():
             logging.info("No diff found in given source")
             return
 
-    for file in patch_obj.get_old_files():
+    for file_chunks_pair in patch_obj.get_files_with_chunks():
         # magic sh*t to lookup all relevant commits
-        relevant_commits.append(get_relevant_commits_from_diff(file))
-        pass
+        relevant_commits.append(get_relevant_commits_from_diffs(file_chunks_pair))
 
+    print(relevant_commits)
 
 if __name__ == "__main__":
     main()
